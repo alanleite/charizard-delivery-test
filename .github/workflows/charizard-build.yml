@@ -1,0 +1,51 @@
+# Builds the artifact of every commit pushed to the base branch (a merge by the Engine included)
+# and reports it. The Engine finds this run by the merge commit (`head_sha`), event `push` and this
+# file's name, and reads `charizard-build.json` from the artifact `charizard-build`:
+#   { "commit": "<the commit built>", "artifact": "sha256:<digest of the bundle>" }
+# The digest is computed in a separate job that never runs the change's code (plan M09 3.4).
+name: charizard-build
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Bundle the site
+        # Reproducible: fixed order, owner and times, so the digest names the content only.
+        run: |
+          mkdir -p dist
+          tar --sort=name --owner=0 --group=0 --numeric-owner --mtime='@0' -C site -cf dist/site.tar .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: dist/site.tar
+          if-no-files-found: error
+          retention-days: 30
+
+  result:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          name: site
+          path: bundle
+      - name: Write charizard-build.json
+        env:
+          COMMIT: ${{ github.sha }}
+        run: |
+          digest="sha256:$(sha256sum bundle/site.tar | cut -d' ' -f1)"
+          printf '{"commit":"%s","artifact":"%s"}\n' "$COMMIT" "$digest" > charizard-build.json
+          cat charizard-build.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: charizard-build
+          path: charizard-build.json
+          if-no-files-found: error
+          retention-days: 30

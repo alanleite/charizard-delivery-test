@@ -1,0 +1,147 @@
+# Deploys one artifact, named by its digest, to staging, which for the test repository is its
+# GitHub Pages site. The Engine dispatches it on the base branch with four inputs and finds the run
+# by its name (`run-name`), so a dispatch whose answer was lost is found again. The run reports in
+# the artifact `charizard-deploy-result` the file `charizard-deploy-result.json`:
+#   { "request", "environment", "artifact", "commit", "failure": null | { "category", "errors" } }
+# `failure.category` is one of deploy, verification, configuration, infrastructure, timeout,
+# cancelled, other; the Engine never reads the workflow's text or logs (CH-46).
+#
+# The site served gets `charizard-deploy.json` with the request, artifact and commit, and the run
+# reads it back from the live address before it reports success.
+name: charizard-deploy
+run-name: charizard ${{ inputs.request }}
+on:
+  workflow_dispatch:
+    inputs:
+      request:
+        description: The Engine's request id (its idempotency key)
+        required: true
+        type: string
+      environment:
+        description: Where to deploy (this workflow knows staging only)
+        required: true
+        type: string
+      artifact:
+        description: The digest of the bundle to deploy (sha256:...)
+        required: true
+        type: string
+      commit:
+        description: The merge commit the bundle was built from
+        required: true
+        type: string
+permissions:
+  contents: read
+  actions: read
+  pages: write
+  id-token: write
+concurrency:
+  group: charizard-pages
+  cancel-in-progress: false
+env:
+  REQUEST: ${{ inputs.request }}
+  ENVIRONMENT: ${{ inputs.environment }}
+  ARTIFACT: ${{ inputs.artifact }}
+  COMMIT: ${{ inputs.commit }}
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+    outputs:
+      category: ${{ steps.category.outputs.category }}
+    steps:
+      - name: Check the inputs
+        id: inputs
+        run: |
+          [[ "$REQUEST" =~ ^[A-Za-z0-9_-]{8,200}$ ]]
+          [[ "$ENVIRONMENT" == staging ]]
+          [[ "$ARTIFACT" =~ ^sha256:[0-9a-f]{64}$ ]]
+          [[ "$COMMIT" =~ ^[0-9a-f]{40}$ ]]
+      - name: Find the build of the commit
+        id: build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          run=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/charizard-build.yml/runs?head_sha=$COMMIT&event=push&status=success&per_page=1" --jq '.workflow_runs[0].id // empty')
+          test -n "$run"
+          echo "run=$run" >> "$GITHUB_OUTPUT"
+      - uses: actions/download-artifact@v5
+        id: download
+        with:
+          name: site
+          path: bundle
+          run-id: ${{ steps.build.outputs.run }}
+          github-token: ${{ github.token }}
+      - name: The bundle is the artifact asked for
+        id: digest
+        run: test "sha256:$(sha256sum bundle/site.tar | cut -d' ' -f1)" = "$ARTIFACT"
+      - name: Unpack and stamp
+        id: stamp
+        run: |
+          mkdir -p public
+          tar -C public -xf bundle/site.tar
+          printf '{"request":"%s","environment":"%s","artifact":"%s","commit":"%s"}\n' \
+            "$REQUEST" "$ENVIRONMENT" "$ARTIFACT" "$COMMIT" > public/charizard-deploy.json
+      - uses: actions/upload-pages-artifact@v4
+        id: upload
+        with:
+          path: public
+      - uses: actions/deploy-pages@v4
+        id: pages
+      - name: Read the live site back
+        id: live
+        env:
+          URL: ${{ steps.pages.outputs.page_url }}
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl -fsS "${URL%/}/charizard-deploy.json?attempt=$attempt" | grep -qF "\"request\":\"$REQUEST\""; then
+              exit 0
+            fi
+            sleep 10
+          done
+          exit 1
+      - name: Name the failure
+        id: category
+        if: always()
+        env:
+          INPUTS: ${{ steps.inputs.outcome }}
+          BUILD: ${{ steps.build.outcome }}
+          DOWNLOAD: ${{ steps.download.outcome }}
+          DIGEST: ${{ steps.digest.outcome }}
+          UPLOAD: ${{ steps.upload.outcome }}
+          PAGES: ${{ steps.pages.outcome }}
+          LIVE: ${{ steps.live.outcome }}
+        run: |
+          category=other
+          if [ "$INPUTS" = failure ] || [ "$BUILD" = failure ] || [ "$DOWNLOAD" = failure ]; then category=configuration
+          elif [ "$DIGEST" = failure ] || [ "$LIVE" = failure ]; then category=verification
+          elif [ "$UPLOAD" = failure ] || [ "$PAGES" = failure ]; then category=deploy
+          fi
+          echo "category=$category" >> "$GITHUB_OUTPUT"
+
+  result:
+    # Writes what the run did from the deploy job's outcome only; it runs no code of the change.
+    needs: deploy
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write charizard-deploy-result.json
+        env:
+          OUTCOME: ${{ needs.deploy.result }}
+          CATEGORY: ${{ needs.deploy.outputs.category }}
+        run: |
+          case "$OUTCOME" in
+            success) failure=null ;;
+            cancelled) failure='{"category":"cancelled","errors":1}' ;;
+            *) failure="{\"category\":\"${CATEGORY:-other}\",\"errors\":1}" ;;
+          esac
+          printf '{"request":"%s","environment":"%s","artifact":"%s","commit":"%s","failure":%s}\n' \
+            "$REQUEST" "$ENVIRONMENT" "$ARTIFACT" "$COMMIT" "$failure" > charizard-deploy-result.json
+          cat charizard-deploy-result.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: charizard-deploy-result
+          path: charizard-deploy-result.json
+          if-no-files-found: error
+          retention-days: 30
