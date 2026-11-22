@@ -83,6 +83,11 @@ jobs:
           tar -C public -xf bundle/site.tar
           printf '{"request":"%s","environment":"%s","artifact":"%s","commit":"%s"}\n' \
             "$REQUEST" "$ENVIRONMENT" "$ARTIFACT" "$COMMIT" > public/charizard-deploy.json
+          # The environment's flag configuration (see AGENTS.md): in staging every flag of the page
+          # is on, so the change can be seen and verified. A page's own site/charizard-config.js is
+          # its local default (flags off) and is replaced here.
+          printf 'window.CHARIZARD_CONFIG = {"environment":"%s","userId":"%s","exposure":100,"flags":{}};\n' \
+            "$ENVIRONMENT" "$ENVIRONMENT" > public/charizard-config.js
       - uses: actions/upload-pages-artifact@v4
         id: upload
         with:
