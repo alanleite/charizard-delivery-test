@@ -3,6 +3,24 @@
   <head>
     <meta charset="utf-8" />
     <title>Charizard delivery test</title>
+    <style>
+      #blastoise-landing { background: #eaf3fc; color: #1b2a41; font-family: serif; }
+      #blastoise-landing[hidden] { display: none; }
+      #blastoise-landing nav { position: sticky; top: 0; background: #1f4e96; border-bottom: 3px solid #8a5a2b; padding: 8px 16px; }
+      #blastoise-landing nav a { color: #fff; margin-right: 12px; }
+      #blastoise-landing .conteudo { padding: 16px; }
+      #blastoise-landing h1 { color: #1f4e96; }
+      #blastoise-landing h2 { color: #1f4e96; border-bottom: 2px solid #8a5a2b; padding-bottom: 4px; scroll-margin-top: 56px; }
+      #blastoise-landing .barras { background: #f3e3c0; border: 1px solid #8a5a2b; padding: 12px; }
+      #blastoise-landing .barra { background: #fff; height: 12px; max-width: 300px; }
+      #blastoise-landing .barra > div { background: #3b7dd8; height: 12px; }
+      #blastoise-landing .rodape { background: #f3e3c0; padding: 8px; }
+      @media (max-width: 400px) {
+        #blastoise-landing nav { font-size: 14px; padding: 6px 8px; }
+        #blastoise-landing nav a { margin-right: 8px; }
+        #blastoise-landing h2 { scroll-margin-top: 44px; }
+      }
+    </style>
   </head>
   <body>
     <h1>Charizard delivery test</h1>
@@ -24,6 +42,38 @@
         <li>[Item a ser escrito pelo autor]</li>
       </ul>
     </section>
+    <section id="blastoise-landing" hidden>
+      <nav>
+        <a href="#atributos">Atributos</a><a href="#fraquezas">Fraquezas</a><a href="#golpes">Golpes</a><a href="#curiosidades">Curiosidades</a>
+      </nav>
+      <div class="conteudo">
+        <h1>Blastoise</h1>
+        <p>Pokémon tipo Água, fofinho apesar do casco duro. Página de consulta para usar enquanto joga.</p>
+        <h2 id="atributos">Atributos</h2>
+        <div class="barras">
+          <p>HP [valor a ser escrito pela autora]</p>
+          <div class="barra"><div style="width: 60%"></div></div>
+          <p>Ataque [valor a ser escrito pela autora]</p>
+          <div class="barra"><div style="width: 50%"></div></div>
+          <p>Defesa [valor a ser escrito pela autora]</p>
+          <div class="barra"><div style="width: 70%"></div></div>
+        </div>
+        <h2 id="fraquezas">Fraquezas</h2>
+        <ul>
+          <li>[Item a ser escrito pela autora]</li>
+        </ul>
+        <h2 id="golpes">Golpes</h2>
+        <ul>
+          <li>[Item a ser escrito pela autora]</li>
+          <li>[Item a ser escrito pela autora]</li>
+        </ul>
+        <h2 id="curiosidades">Curiosidades</h2>
+        <ul>
+          <li>[Item a ser escrito pela autora]</li>
+        </ul>
+        <p class="rodape">What was deployed: <a href="charizard-deploy.json">charizard-deploy.json</a>.</p>
+      </div>
+    </section>
     <script src="charizard-config.js"></script>
     <script>
       (function () {
@@ -43,7 +93,8 @@
           }
           return h;
         }
-        function flagOn() {
+        var BLASTOISE_KEY = "blastoise-landing";
+        function flagOn(KEY) {
           var c = window.CHARIZARD_CONFIG;
           if (!c || typeof c !== "object") return false;
           if (c.flags && typeof c.flags[KEY] === "boolean") return c.flags[KEY];
@@ -54,14 +105,25 @@
         }
         var variant = "atual";
         var on = false;
+        var blastoiseOn = false;
         try {
-          on = flagOn();
+          on = flagOn("ficha-dragonite");
         } catch (e) {
           on = false;
         }
-        if (on) variant = "nova";
+        try {
+          blastoiseOn = flagOn(BLASTOISE_KEY);
+        } catch (e) {
+          blastoiseOn = false;
+        }
+        if (on || blastoiseOn) variant = "nova";
         try {
           if (on) document.getElementById("ficha-dragonite").hidden = false;
+        } catch (e) {
+          inc("page_render_errors_total", variant);
+        }
+        try {
+          if (blastoiseOn) document.getElementById("blastoise-landing").hidden = false;
         } catch (e) {
           inc("page_render_errors_total", variant);
         }
