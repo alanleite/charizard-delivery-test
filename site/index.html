@@ -23,25 +23,6 @@
     </style>
   </head>
   <body>
-    <h1>Charizard delivery test</h1>
-    <p>A stand-in for staging. What was deployed: <a href="charizard-deploy.json">charizard-deploy.json</a>.</p>
-    <section id="ficha-dragonite" hidden>
-      <h2>Dragonite no Pokémon FireRed</h2>
-      <h3>Habilidades</h3>
-      <ul>
-        <li>[Item a ser escrito pelo autor]</li>
-        <li>[Item a ser escrito pelo autor]</li>
-      </ul>
-      <h3>Personalidade</h3>
-      <ul>
-        <li>[Item a ser escrito pelo autor]</li>
-      </ul>
-      <h3>Dicas de uso</h3>
-      <ul>
-        <li>[Item a ser escrito pelo autor]</li>
-        <li>[Item a ser escrito pelo autor]</li>
-      </ul>
-    </section>
     <section id="blastoise-landing" hidden>
       <nav>
         <a href="#atributos">Atributos</a><a href="#fraquezas">Fraquezas</a><a href="#golpes">Golpes</a><a href="#curiosidades">Curiosidades</a>
@@ -52,11 +33,17 @@
         <h2 id="atributos">Atributos</h2>
         <div class="barras">
           <p>HP [valor a ser escrito pela autora]</p>
-          <div class="barra"><div style="width: 60%"></div></div>
+          <div class="barra"><div style="width: 0%"></div></div>
           <p>Ataque [valor a ser escrito pela autora]</p>
-          <div class="barra"><div style="width: 50%"></div></div>
+          <div class="barra"><div style="width: 0%"></div></div>
           <p>Defesa [valor a ser escrito pela autora]</p>
-          <div class="barra"><div style="width: 70%"></div></div>
+          <div class="barra"><div style="width: 0%"></div></div>
+          <p>Ataque Especial [valor a ser escrito pela autora]</p>
+          <div class="barra"><div style="width: 0%"></div></div>
+          <p>Defesa Especial [valor a ser escrito pela autora]</p>
+          <div class="barra"><div style="width: 0%"></div></div>
+          <p>Velocidade [valor a ser escrito pela autora]</p>
+          <div class="barra"><div style="width: 0%"></div></div>
         </div>
         <h2 id="fraquezas">Fraquezas</h2>
         <ul>
@@ -73,6 +60,27 @@
         </ul>
         <p class="rodape">What was deployed: <a href="charizard-deploy.json">charizard-deploy.json</a>.</p>
       </div>
+    </section>
+    <div id="pagina-atual">
+    <h1>Charizard delivery test</h1>
+    <p>A stand-in for staging. What was deployed: <a href="charizard-deploy.json">charizard-deploy.json</a>.</p>
+    </div>
+    <section id="ficha-dragonite" hidden>
+      <h2>Dragonite no Pokémon FireRed</h2>
+      <h3>Habilidades</h3>
+      <ul>
+        <li>[Item a ser escrito pelo autor]</li>
+        <li>[Item a ser escrito pelo autor]</li>
+      </ul>
+      <h3>Personalidade</h3>
+      <ul>
+        <li>[Item a ser escrito pelo autor]</li>
+      </ul>
+      <h3>Dicas de uso</h3>
+      <ul>
+        <li>[Item a ser escrito pelo autor]</li>
+        <li>[Item a ser escrito pelo autor]</li>
+      </ul>
     </section>
     <script src="charizard-config.js"></script>
     <script>
@@ -123,7 +131,10 @@
           inc("page_render_errors_total", variant);
         }
         try {
-          if (blastoiseOn) document.getElementById("blastoise-landing").hidden = false;
+          if (blastoiseOn) {
+            document.getElementById("blastoise-landing").hidden = false;
+            document.getElementById("pagina-atual").hidden = true;
+          }
         } catch (e) {
           inc("page_render_errors_total", variant);
         }
