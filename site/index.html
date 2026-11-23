@@ -47,19 +47,25 @@
           var c = window.CHARIZARD_CONFIG;
           if (!c || typeof c !== "object") return false;
           if (c.flags && typeof c.flags[KEY] === "boolean") return c.flags[KEY];
-          if (typeof c.exposure !== "number" || typeof c.userId !== "string") return false;
+          if (typeof c.exposure !== "number" || !isFinite(c.exposure)) return false;
+          if (c.exposure < 0 || c.exposure > 100) return false;
+          if (typeof c.userId !== "string" || c.userId.length === 0) return false;
           return hash(c.userId) % 100 < c.exposure;
         }
         var variant = "atual";
+        var on = false;
         try {
-          if (flagOn()) {
-            variant = "nova";
-            document.getElementById("ficha-dragonite").hidden = false;
-          }
-          inc("page_views_total", variant);
+          on = flagOn();
+        } catch (e) {
+          on = false;
+        }
+        if (on) variant = "nova";
+        try {
+          if (on) document.getElementById("ficha-dragonite").hidden = false;
         } catch (e) {
           inc("page_render_errors_total", variant);
         }
+        inc("page_views_total", variant);
         document.addEventListener("click", function (ev) {
           var t = ev.target;
           if (t && t.closest && t.closest("a")) inc("link_clicks_total", variant);
