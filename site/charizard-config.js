@@ -1,0 +1,1 @@
+window.CHARIZARD_CONFIG = window.CHARIZARD_CONFIG || null;

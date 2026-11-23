@@ -7,5 +7,70 @@
   <body>
     <h1>Charizard delivery test</h1>
     <p>A stand-in for staging. What was deployed: <a href="charizard-deploy.json">charizard-deploy.json</a>.</p>
+    <section id="ficha-dragonite" hidden>
+      <h2>Dragonite no Pokémon FireRed</h2>
+      <h3>Habilidades</h3>
+      <ul>
+        <li>[Item a ser escrito pelo autor]</li>
+        <li>[Item a ser escrito pelo autor]</li>
+      </ul>
+      <h3>Personalidade</h3>
+      <ul>
+        <li>[Item a ser escrito pelo autor]</li>
+      </ul>
+      <h3>Dicas de uso</h3>
+      <ul>
+        <li>[Item a ser escrito pelo autor]</li>
+        <li>[Item a ser escrito pelo autor]</li>
+      </ul>
+    </section>
+    <script src="charizard-config.js"></script>
+    <script>
+      (function () {
+        var KEY = "ficha-dragonite";
+        var metrics = (window.charizardMetrics = window.charizardMetrics || {
+          page_views_total: {},
+          link_clicks_total: {},
+          page_render_errors_total: {}
+        });
+        function inc(name, variant) {
+          metrics[name][variant] = (metrics[name][variant] || 0) + 1;
+        }
+        function hash(s) {
+          var h = 0;
+          for (var i = 0; i < s.length; i++) {
+            h = (h * 31 + s.charCodeAt(i)) >>> 0;
+          }
+          return h;
+        }
+        function flagOn() {
+          var c = window.CHARIZARD_CONFIG;
+          if (!c || typeof c !== "object") return false;
+          if (c.flags && typeof c.flags[KEY] === "boolean") return c.flags[KEY];
+          if (typeof c.exposure !== "number" || !isFinite(c.exposure)) return false;
+          if (c.exposure < 0 || c.exposure > 100) return false;
+          if (typeof c.userId !== "string" || c.userId.length === 0) return false;
+          return hash(c.userId) % 100 < c.exposure;
+        }
+        var variant = "atual";
+        var on = false;
+        try {
+          on = flagOn();
+        } catch (e) {
+          on = false;
+        }
+        if (on) variant = "nova";
+        try {
+          if (on) document.getElementById("ficha-dragonite").hidden = false;
+        } catch (e) {
+          inc("page_render_errors_total", variant);
+        }
+        inc("page_views_total", variant);
+        document.addEventListener("click", function (ev) {
+          var t = ev.target;
+          if (t && t.closest && t.closest("a")) inc("link_clicks_total", variant);
+        });
+      })();
+    </script>
   </body>
 </html>
