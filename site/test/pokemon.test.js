@@ -57,11 +57,20 @@ assert.strictEqual(run({ flags: "x", exposure: 100, userId: "s" }).els["pokemon-
 assert.strictEqual(run({ flags: { [K]: true }, exposure: 0, userId: "s" }).els["pokemon-page-link"].hidden, false);
 // render error labelled nova, link stays hidden
 {
-  const els = { "blastoise-landing": { hidden: true }, "pagina-atual": { hidden: false }, "ficha-dragonite": { hidden: true } };
+  const els = { "blastoise-landing": { hidden: true }, "pagina-atual": { hidden: false }, "ficha-dragonite": { hidden: true }, "pokemon-page-link": { hidden: true } };
   const win = { CHARIZARD_CONFIG: { flags: { "pokemon-page": true } } };
   vm.runInNewContext(code, { window: win, document: { getElementById: id => els[id], addEventListener() {} } });
+  assert.strictEqual(els["pokemon-page-link"].hidden, true);
   assert.strictEqual(win.charizardMetrics.page_render_errors_total.nova, 1);
+  assert.strictEqual(win.charizardMetrics.page_views_total.nova, 1);
+  assert(!win.charizardMetrics.page_views_total.atual);
 }
+// new page content and order: config loads before the gate; provisional items; the page emits no metrics (the view series measures the main page)
+assert(page.indexOf('<script src="charizard-config.js">') < page.indexOf("<script>"));
+assert.deepStrictEqual([...page.matchAll(/<li>([^<]*)<\/li>/g)].map(m => m[1]), Array(4).fill("[Curiosidade a ser escrita pelo autor]"));
+assert(page.includes("<p>Algumas curiosidades sobre a franquia Pokémon.</p>"));
+assert(page.indexOf("<h1>") < page.indexOf("<ul>") && page.indexOf("<ul>") < page.indexOf('<a href="index.html">'));
+assert(!/charizardMetrics/.test(page));
 // the new page is gated too: hidden until the flag is on, else back to index.html
 const gate = [...page.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join("\n");
 assert(/<script src="charizard-config\.js"><\/script>/.test(page) && /<body hidden>/.test(page));
@@ -76,6 +85,11 @@ g = runPage({ environment: "staging", userId: "staging", exposure: 100, flags: {
 assert.strictEqual(g.body.hidden, false);
 for (const c of [null, { flags: { [K]: false }, exposure: 100, userId: "s" }, { exposure: 0, userId: "s" }, { exposure: 100 }]) {
   g = runPage(c);
+  assert.strictEqual(g.body.hidden, true); assert.strictEqual(g.loc.to, "index.html");
+}
+{
+  const cfg = { get flags() { throw new Error("boom"); } };
+  g = runPage(cfg);
   assert.strictEqual(g.body.hidden, true); assert.strictEqual(g.loc.to, "index.html");
 }
 console.log("pokemon ok");

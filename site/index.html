@@ -368,6 +368,12 @@
         var flag = false;
         try { flag = on(); } catch (e) { flag = false; }
         if (!flag) return;
+        // one page load = one view: with the flag on it is "nova" even if the link fails to render
+        var v = (m.page_views_total = m.page_views_total || {});
+        if (!v.nova) {
+          if (v.atual > 1) v.atual -= 1; else delete v.atual;
+          bump("page_views_total", "nova");
+        }
         try {
           var link = document.getElementById("link-pokemon");
           var box = document.getElementById("pokemon-page-link");
@@ -377,12 +383,6 @@
             ev.stopPropagation();
           });
           box.hidden = false;
-          // one page load = one view: if no earlier script counted it as "nova", move it from "atual"
-          var v = (m.page_views_total = m.page_views_total || {});
-          if (!v.nova) {
-            if (v.atual > 1) v.atual -= 1; else delete v.atual;
-            bump("page_views_total", "nova");
-          }
         } catch (e) {
           bump("page_render_errors_total", "nova");
         }
