@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <title>Charizard delivery test</title>
+    <link rel="stylesheet" href="assets/landing.css" />
     <style>
       #blastoise-landing { background: #eaf3fc; color: #1b2a41; font-family: serif; }
       #blastoise-landing[hidden] { display: none; }
@@ -83,6 +84,24 @@
         <li>[Item a ser escrito pelo autor]</li>
       </ul>
     </section>
+    <section id="charmander-ficha-rapida" aria-labelledby="titulo-charmander" hidden>
+      <div class="landing-minimal">
+        <div class="px-6 md:px-12 py-20 md:py-28 bg-paper text-ink">
+          <div class="mx-auto max-w-content grid gap-8">
+            <div class="grid gap-6 max-w-reading">
+              <h2 id="titulo-charmander" class="text-section font-medium tracking-tight">Charmander — ficha rápida</h2>
+              <p class="text-lead leading-relaxed text-muted">Um Pokémon pequeno e curioso, fácil de reconhecer pela chama na ponta da cauda.</p>
+            </div>
+            <ul class="grid gap-3 max-w-reading text-body leading-relaxed">
+              <li>Tipo: Fogo</li>
+              <li>Cauda com chama</li>
+              <li>Evolui para Charmeleon</li>
+            </ul>
+            <p><a id="link-pokedex" href="https://www.pokemon.com/br/pokedex/charmander" class="inline-flex min-h-control items-center text-body font-semibold text-brand underline focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-paper">Saiba mais na Pokédex</a></p>
+          </div>
+        </div>
+      </div>
+    </section>
     <script src="charizard-config.js"></script>
     <script>
       (function () {
@@ -144,6 +163,46 @@
           var t = ev.target;
           if (t && t.closest && t.closest("a")) inc("link_clicks_total", variant);
         });
+      })();
+    </script>
+    <script>
+      (function () {
+        var m = (window.charizardMetrics = window.charizardMetrics || {
+          page_views_total: {},
+          link_clicks_total: {},
+          page_render_errors_total: {}
+        });
+        function bump(name, v) { m[name] = m[name] || {}; m[name][v] = (m[name][v] || 0) + 1; }
+        function on() {
+          var c = window.CHARIZARD_CONFIG, K = "charmander-ficha-rapida";
+          if (!c || typeof c !== "object") return false;
+          if (c.flags && typeof c.flags[K] === "boolean") return c.flags[K];
+          if (typeof c.exposure !== "number" || !isFinite(c.exposure) || c.exposure < 0 || c.exposure > 100) return false;
+          if (typeof c.userId !== "string" || c.userId.length === 0) return false;
+          var h = 0;
+          for (var i = 0; i < c.userId.length; i++) h = (h * 31 + c.userId.charCodeAt(i)) >>> 0;
+          return h % 100 < c.exposure;
+        }
+        var flag = false;
+        try { flag = on(); } catch (e) { flag = false; }
+        if (!flag) return;
+        try {
+          document.getElementById("charmander-ficha-rapida").hidden = false;
+          // the existing script already counted this load once: as "nova" if Blastoise is shown, else as "atual".
+          // With this section displayed the view belongs to "nova" only, so move it.
+          if (document.getElementById("blastoise-landing").hidden) {
+            var v = m.page_views_total;
+            if (v.atual > 1) v.atual -= 1; else delete v.atual;
+            bump("page_views_total", "nova");
+          }
+          var link = document.getElementById("link-pokedex");
+          if (link) link.addEventListener("click", function (ev) {
+            bump("link_clicks_total", "nova");
+            ev.stopPropagation();
+          });
+        } catch (e) {
+          bump("page_render_errors_total", "nova");
+        }
       })();
     </script>
   </body>
