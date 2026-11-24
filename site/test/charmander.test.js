@@ -4,7 +4,7 @@ const sec = h.match(/<section id="charmander-ficha-rapida"[\s\S]*?<\/section>/)[
 // hidden by default, last section, after Blastoise and Dragonite
 assert(/<section id="charmander-ficha-rapida"[^>]* hidden>/.test(sec));
 assert(h.indexOf("charmander-ficha-rapida") > h.indexOf('id="ficha-dragonite"') && h.indexOf('id="ficha-dragonite"') > h.indexOf('id="blastoise-landing"'));
-assert(h.lastIndexOf("<section") === h.indexOf('<section id="charmander-ficha-rapida"'));
+assert(h.indexOf("<section", h.indexOf("<section id=\"charmander-ficha-rapida\"") + 1) === h.indexOf("<section id=\"eevee-ficha-rapida\""));
 // content
 assert.strictEqual((sec.match(/<h2/g) || []).length, 1);
 assert(sec.includes("Charmander — ficha rápida</h2>"));

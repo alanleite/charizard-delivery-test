@@ -102,6 +102,19 @@
         </div>
       </div>
     </section>
+    <section id="eevee-ficha-rapida" aria-labelledby="titulo-eevee" hidden>
+      <div class="landing-minimal">
+        <div class="px-6 md:px-12 py-20 md:py-28 bg-paper text-ink">
+          <div class="mx-auto max-w-content grid gap-8">
+            <h2 id="titulo-eevee" class="text-section font-medium tracking-tight">Eevee</h2>
+            <div class="grid gap-6 max-w-reading">
+              <p class="text-body leading-relaxed">Eevee é um Pokémon do tipo Normal conhecido por suas diferentes evoluções.</p>
+              <p><a id="link-eevee" href="https://www.pokemon.com/br/pokedex/eevee" class="inline-flex min-h-control items-center break-words text-body font-semibold text-brand underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-paper">https://www.pokemon.com/br/pokedex/eevee</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
     <script src="charizard-config.js"></script>
     <script>
       (function () {
@@ -203,6 +216,38 @@
         } catch (e) {
           bump("page_render_errors_total", "nova");
         }
+      })();
+    </script>
+    <script>
+      (function () {
+        var m = (window.charizardMetrics = window.charizardMetrics || {});
+        function bump(name, v) { m[name] = m[name] || {}; m[name][v] = (m[name][v] || 0) + 1; }
+        function on() {
+          var c = window.CHARIZARD_CONFIG, K = "eevee-ficha-rapida";
+          if (!c || typeof c !== "object") return false;
+          if (c.flags && typeof c.flags[K] === "boolean") return c.flags[K];
+          if (typeof c.exposure !== "number" || !isFinite(c.exposure) || c.exposure < 0 || c.exposure > 100) return false;
+          if (typeof c.userId !== "string" || c.userId.length === 0) return false;
+          var h = 0;
+          for (var i = 0; i < c.userId.length; i++) h = (h * 31 + c.userId.charCodeAt(i)) >>> 0;
+          return h % 100 < c.exposure;
+        }
+        var flag = false;
+        try { flag = on(); } catch (e) { flag = false; }
+        var variant = flag ? "nova" : "atual";
+        if (flag) {
+          try {
+            var sec = document.getElementById("eevee-ficha-rapida");
+            sec.hidden = false;
+            var link = document.getElementById("link-eevee");
+            link.addEventListener("click", function () {
+              bump("eevee_link_clicks_total", "nova");
+            });
+          } catch (e) {
+            bump("eevee_render_errors_total", variant);
+          }
+        }
+        bump("eevee_page_views_total", variant);
       })();
     </script>
   </body>
