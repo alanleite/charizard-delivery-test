@@ -21,7 +21,7 @@ assert(!fs.existsSync(path.join(__dirname, "..", "..", "package.json")));
 // behavior
 const code = [...h.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join("\n");
 function run(cfg) {
-  const els = { "blastoise-landing": { hidden: true }, "pagina-atual": { hidden: false }, "ficha-dragonite": { hidden: true }, "charmander-ficha-rapida": { hidden: true }, "link-pokedex": { l: [], addEventListener(t, f) { this.l.push(f); } } };
+  const els = { "blastoise-landing": { hidden: true }, "pagina-atual": { hidden: false }, "ficha-dragonite": { hidden: true }, "charmander-ficha-rapida": { hidden: true }, "link-pokedex": { l: [], addEventListener(t, f) { this.l.push(f); } }, "eevee-ficha-rapida": { hidden: true }, "link-eevee": { addEventListener() {} } };
   const doc = { getElementById: id => els[id], addEventListener() {} };
   const win = { CHARIZARD_CONFIG: cfg };
   vm.runInNewContext(code, { window: win, document: doc });

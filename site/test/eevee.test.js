@@ -77,6 +77,30 @@ assert.strictEqual(JSON.stringify(r.m.eevee_page_views_total), JSON.stringify({ 
   assert.strictEqual(win.charizardMetrics.eevee_render_errors_total.nova, 1);
   assert.strictEqual(win.charizardMetrics.eevee_page_views_total.nova, 1);
 }
+// fail-closed: malformed config stays off
+for (const cfg of [
+  { userId: "s", exposure: 101 }, { userId: "s", exposure: 500 }, { userId: "s", exposure: -1 },
+  { exposure: 100 }, { userId: "", exposure: 100 }, "on", 7,
+  { userId: "s", exposure: 100, flags: { "eevee-ficha-rapida": "false" } },
+  { userId: "s", exposure: 100, flags: { "eevee-ficha-rapida": 1 } },
+]) {
+  const x = run(cfg);
+  assert.strictEqual(x.els["eevee-ficha-rapida"].hidden, true, JSON.stringify(cfg));
+  assert.strictEqual(JSON.stringify(x.m.eevee_page_views_total), JSON.stringify({ atual: 1 }));
+  assert.strictEqual(x.els["link-eevee"].l.length, 0);
+  assert(!x.m.eevee_link_clicks_total);
+}
+// legacy series untouched by the Eevee script
+{
+  const off = run({ userId: "s", exposure: 0 }), on = run(ON);
+  // legacy series are identical whether Eevee is on or off, all else equal
+  const f = v => run({ userId: "s", exposure: 100, flags: { "blastoise-landing": false, "ficha-dragonite": false, "charmander-ficha-rapida": false, "eevee-ficha-rapida": v } });
+  for (const k of ["page_views_total", "page_render_errors_total", "link_clicks_total"])
+    assert.strictEqual(JSON.stringify(f(true).m[k]), JSON.stringify(f(false).m[k]), k);
+  assert(!Object.keys(on.m).some(k => k.startsWith("eevee_") && !/^eevee_(page_views|link_clicks|render_errors)_total$/.test(k)));
+}
+// focus ring and labelling
+assert(/focus-visible:ring-2/.test(a[0]) && sec.includes('aria-labelledby="titulo-eevee"'));
 // coexistence: each section follows its own flag in every combination
 const keys = ["blastoise-landing", "ficha-dragonite", "charmander-ficha-rapida", "eevee-ficha-rapida"];
 for (let mask = 0; mask < 16; mask++) {

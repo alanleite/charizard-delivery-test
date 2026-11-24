@@ -225,7 +225,7 @@
         function on() {
           var c = window.CHARIZARD_CONFIG, K = "eevee-ficha-rapida";
           if (!c || typeof c !== "object") return false;
-          if (c.flags && typeof c.flags[K] === "boolean") return c.flags[K];
+          if (c.flags && typeof c.flags === "object" && K in c.flags) return c.flags[K] === true;
           if (typeof c.exposure !== "number" || !isFinite(c.exposure) || c.exposure < 0 || c.exposure > 100) return false;
           if (typeof c.userId !== "string" || c.userId.length === 0) return false;
           var h = 0;
