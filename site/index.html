@@ -115,6 +115,19 @@
         </div>
       </div>
     </section>
+    <section id="snorlax-ficha-rapida" aria-labelledby="titulo-snorlax" hidden>
+      <div class="landing-minimal">
+        <div class="px-6 md:px-12 py-20 md:py-28 bg-paper text-ink">
+          <div class="mx-auto max-w-content grid gap-8">
+            <h2 id="titulo-snorlax" class="text-section font-medium tracking-tight">Snorlax</h2>
+            <div class="grid gap-6 max-w-reading">
+              <p class="text-body leading-relaxed">Snorlax valoriza o descanso e recupera energia sem pressa. Conheça seu ritmo tranquilo.</p>
+              <p class="min-w-0"><a id="link-snorlax" href="https://www.pokemon.com/br/pokedex/snorlax" class="inline-flex min-h-control items-center rounded-control text-body font-semibold text-brand underline focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-paper">Conheça Snorlax na Pokédex</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
     <script src="charizard-config.js"></script>
     <script>
       (function () {
@@ -250,6 +263,40 @@
           bump("eevee_render_errors_total", variant);
         }
         bump("eevee_page_views_total", variant);
+      })();
+    </script>
+    <script>
+      (function () {
+        var m = (window.charizardMetrics = window.charizardMetrics || {});
+        function bump(name, v) { m[name] = m[name] || {}; m[name][v] = (m[name][v] || 0) + 1; }
+        function on() {
+          var c = window.CHARIZARD_CONFIG, K = "snorlax-ficha-rapida";
+          if (!c || typeof c !== "object") return false;
+          if (c.flags && typeof c.flags === "object" && K in c.flags) return c.flags[K] === true;
+          if (typeof c.exposure !== "number" || !isFinite(c.exposure) || c.exposure < 0 || c.exposure > 100) return false;
+          if (typeof c.userId !== "string" || c.userId.length === 0) return false;
+          var h = 0;
+          for (var i = 0; i < c.userId.length; i++) h = (h * 31 + c.userId.charCodeAt(i)) >>> 0;
+          return h % 100 < c.exposure;
+        }
+        var flag = false, variant = "atual";
+        try {
+          flag = on();
+          variant = flag ? "nova" : "atual";
+          if (flag) {
+            document.getElementById("snorlax-ficha-rapida").hidden = false;
+            document.getElementById("link-snorlax").addEventListener("click", function (ev) {
+              // counted only in its own series; stopPropagation keeps it out of legacy link_clicks_total
+              bump("snorlax_link_clicks_total", "nova");
+              ev.stopPropagation();
+            });
+          }
+        } catch (e) {
+          bump("snorlax_render_errors_total", variant);
+        }
+        m.snorlax_render_errors_total = m.snorlax_render_errors_total || {};
+        m.snorlax_render_errors_total[variant] = m.snorlax_render_errors_total[variant] || 0;
+        bump("snorlax_page_views_total", variant);
       })();
     </script>
   </body>
