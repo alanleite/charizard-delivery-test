@@ -33,7 +33,8 @@ const J = JSON.stringify;
 let r = run(null);
 assert.strictEqual(r.els["snorlax-ficha-rapida"].hidden, true);
 assert.strictEqual(J(r.m.snorlax_page_views_total), J({ atual: 1 }));
-assert(!r.m.snorlax_link_clicks_total && !r.m.snorlax_render_errors_total);
+assert(!r.m.snorlax_link_clicks_total);
+assert.strictEqual(J(r.m.snorlax_render_errors_total), J({ atual: 0 }));
 assert.strictEqual(r.els["link-snorlax"].l.length, 0);
 r = run({ flags: { "snorlax-ficha-rapida": false }, exposure: 100, userId: "s" });
 assert.strictEqual(r.els["snorlax-ficha-rapida"].hidden, true);
@@ -41,7 +42,7 @@ assert.strictEqual(J(r.m.snorlax_page_views_total), J({ atual: 1 }));
 r = run({ environment: "staging", userId: "staging", exposure: 100, flags: {} });
 assert.strictEqual(r.els["snorlax-ficha-rapida"].hidden, false);
 assert.strictEqual(J(r.m.snorlax_page_views_total), J({ nova: 1 }));
-assert(!r.m.snorlax_render_errors_total);
+assert.strictEqual(J(r.m.snorlax_render_errors_total), J({ nova: 0 }));
 const legacy = J(r.m.link_clicks_total);
 for (let n = 1; n <= 2; n++) {
   let stopped = false;
@@ -59,5 +60,27 @@ assert.strictEqual(J(r.m.link_clicks_total), legacy);
   assert.strictEqual(win.charizardMetrics.snorlax_render_errors_total.nova, 1);
   assert.strictEqual(win.charizardMetrics.snorlax_page_views_total.nova, 1);
 }
+// render failure in the atual path
+{
+  const els = {};
+  const cfg = { get flags() { throw new Error("x"); } };
+  const win = { CHARIZARD_CONFIG: cfg };
+  vm.runInNewContext(code, { window: win, document: { getElementById: id => els[id], addEventListener() {} } });
+  assert.strictEqual(J(win.charizardMetrics.snorlax_render_errors_total), J({ atual: 1 }));
+}
+// fail closed and precedence
+for (const c of [{ exposure: 101, userId: "s" }, { exposure: 500, userId: "s" }, { exposure: -1, userId: "s" }, { exposure: 100 }, { exposure: 100, userId: "" }, "x", 5,
+  { flags: { "snorlax-ficha-rapida": "false" }, exposure: 100, userId: "s" }, { flags: { "snorlax-ficha-rapida": 1 }, exposure: 100, userId: "s" }, { flags: { "snorlax-ficha-rapida": false }, exposure: 100, userId: "s" }])
+  assert.strictEqual(run(c).els["snorlax-ficha-rapida"].hidden, true, J(c));
+assert.strictEqual(run({ flags: { "snorlax-ficha-rapida": true }, exposure: 0, userId: "s" }).els["snorlax-ficha-rapida"].hidden, false);
+assert.strictEqual(run({ flags: "x", exposure: 100, userId: "s" }).els["snorlax-ficha-rapida"].hidden, false);
+// legacy counters identical with snorlax on/off; legacy click listener is bubble-phase
+{
+  const L = f => { const x = run({ flags: { "snorlax-ficha-rapida": f, "eevee-ficha-rapida": true } }).m; return J([x.page_views_total, x.page_render_errors_total, x.link_clicks_total]); };
+  assert.strictEqual(L(true), L(false));
+  assert(/document\.addEventListener\("click", function \(ev\) \{\s*var t = ev\.target;[\s\S]*?\}\);/.test(h) && !/document\.addEventListener\("click"[\s\S]{0,300}?\},\s*true\)/.test(h));
+}
+// focus ring tokens and rounded link
+assert(/rounded-control/.test(a[0]) && /focus-visible:ring-focus/.test(a[0]) && /ring-offset-2/.test(a[0]) && /ring-offset-paper/.test(a[0]) && sec.includes('aria-labelledby="titulo-snorlax"'));
 // legacy series not renamed
 assert(h.includes("page_views_total: {}") && h.includes("link_clicks_total: {}"));

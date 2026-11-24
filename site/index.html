@@ -122,7 +122,7 @@
             <h2 id="titulo-snorlax" class="text-section font-medium tracking-tight">Snorlax</h2>
             <div class="grid gap-6 max-w-reading">
               <p class="text-body leading-relaxed">Snorlax valoriza o descanso e recupera energia sem pressa.</p>
-              <p class="min-w-0"><a id="link-snorlax" href="https://www.pokemon.com/br/pokedex/snorlax" class="inline-flex min-h-control items-center text-body font-semibold text-brand underline focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-paper">Conheça Snorlax na Pokédex</a></p>
+              <p class="min-w-0"><a id="link-snorlax" href="https://www.pokemon.com/br/pokedex/snorlax" class="inline-flex min-h-control items-center rounded-control text-body font-semibold text-brand underline focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-paper">Conheça Snorlax na Pokédex</a></p>
             </div>
           </div>
         </div>
@@ -294,6 +294,8 @@
         } catch (e) {
           bump("snorlax_render_errors_total", variant);
         }
+        m.snorlax_render_errors_total = m.snorlax_render_errors_total || {};
+        m.snorlax_render_errors_total[variant] = m.snorlax_render_errors_total[variant] || 0;
         bump("snorlax_page_views_total", variant);
       })();
     </script>
