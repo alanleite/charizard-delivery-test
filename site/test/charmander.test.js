@@ -33,6 +33,10 @@ r = run({ environment: "staging", userId: "staging", exposure: 100, flags: {} })
 assert(r.els["charmander-ficha-rapida"].hidden === false);
 assert.strictEqual(r.m.page_views_total.nova, 1);
 let stopped = 0;
+// charmander on alone: one "nova" view for the section
+const solo = run({ flags: { "charmander-ficha-rapida": true } });
+assert(solo.els["charmander-ficha-rapida"].hidden === false);
+assert.strictEqual(solo.m.page_views_total.nova, 1);
 r.els["link-pokedex"].l.forEach(f => f({ stopPropagation() { stopped++; } }));
 assert.strictEqual(r.m.link_clicks_total.nova, 1);
 r = run({ exposure: 500, userId: "x" });
