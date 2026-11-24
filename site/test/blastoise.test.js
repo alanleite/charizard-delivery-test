@@ -24,9 +24,11 @@ const code = [...h.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).joi
 function run(cfg, broken) {
   const els = { "blastoise-landing": { hidden: true }, "pagina-atual": { hidden: false }, "ficha-dragonite": { hidden: true } };
   const win = { CHARIZARD_CONFIG: cfg };
-  const doc = { getElementById: id => { if (broken && id === "blastoise-landing") throw new Error("x"); return els[id]; }, addEventListener() {} };
+  const doc = { getElementById: id => { if (broken && id === "blastoise-landing") throw new Error("x"); return els[id]; }, addEventListener(t, fn) { handlers.push(fn); } };
+  const handlers = [];
   vm.runInNewContext(code, { window: win, document: doc });
-  return { els, m: win.charizardMetrics };
+  const click = () => handlers.forEach(f => f({ target: { closest: s => (s === "a" ? {} : null) } }));
+  return { els, m: win.charizardMetrics, click };
 }
 let r = run(null);
 assert(r.els["blastoise-landing"].hidden && !r.els["pagina-atual"].hidden && r.m.page_views_total.atual === 1);
@@ -37,3 +39,21 @@ assert(r.els["blastoise-landing"].hidden && r.m.page_views_total.atual === 1);
 r = run({ flags: { "blastoise-landing": true } }, true);
 assert(r.m.page_render_errors_total.nova === 1);
 console.log("behavior ok");
+// dragonite flag alone is not the change: variant stays atual
+r = run({ flags: { "ficha-dragonite": true, "blastoise-landing": false } });
+assert(r.els["blastoise-landing"].hidden && !r.els["pagina-atual"].hidden && !r.els["ficha-dragonite"].hidden);
+assert(r.m.page_views_total.atual === 1 && !r.m.page_views_total.nova);
+r = run({ flags: { "ficha-dragonite": true } });
+assert(r.m.page_views_total.atual === 1 && !r.m.page_views_total.nova);
+// missing userId fails closed
+r = run({ exposure: 100 });
+assert(r.els["blastoise-landing"].hidden && r.m.page_views_total.atual === 1);
+// explicit false override beats exposure
+r = run({ exposure: 100, userId: "staging", flags: { "blastoise-landing": false } });
+assert(r.els["blastoise-landing"].hidden && r.m.page_views_total.atual === 1);
+// clicks counted with the variant label
+r = run({ flags: { "blastoise-landing": true } }); r.click(); r.click();
+assert(r.m.link_clicks_total.nova === 2 && !r.m.link_clicks_total.atual);
+r = run(null); r.click();
+assert(r.m.link_clicks_total.atual === 1);
+console.log("variant ok");
