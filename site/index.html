@@ -128,6 +128,22 @@
         </div>
       </div>
     </section>
+    <section id="jigglypuff-ficha-rapida" aria-labelledby="titulo-jigglypuff" hidden>
+      <div class="landing-minimal">
+        <div class="px-6 md:px-12 py-20 md:py-28 bg-paper text-ink">
+          <div class="mx-auto max-w-content">
+            <div class="grid gap-8 max-w-reading">
+              <h2 id="titulo-jigglypuff" class="text-section font-medium tracking-tight">Jigglypuff</h2>
+              <div class="grid gap-6">
+                <p class="text-body leading-relaxed text-muted">Tipo: Normal/Fada</p>
+                <p class="text-body leading-relaxed">Seu canto suave embala quem está por perto.</p>
+                <p class="min-w-0"><a id="link-jigglypuff" href="https://www.pokemon.com/br/pokedex/jigglypuff" class="inline-flex min-h-control items-center rounded-control text-body break-words text-brand underline focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-paper">Ver Jigglypuff no Pokédex</a></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
     <script src="charizard-config.js"></script>
     <script>
       (function () {
@@ -297,6 +313,40 @@
         m.snorlax_render_errors_total = m.snorlax_render_errors_total || {};
         m.snorlax_render_errors_total[variant] = m.snorlax_render_errors_total[variant] || 0;
         bump("snorlax_page_views_total", variant);
+      })();
+    </script>
+    <script>
+      (function () {
+        var m = (window.charizardMetrics = window.charizardMetrics || {});
+        function bump(name, v) { m[name] = m[name] || {}; m[name][v] = (m[name][v] || 0) + 1; }
+        function on() {
+          var c = window.CHARIZARD_CONFIG, K = "jigglypuff-ficha-rapida";
+          if (!c || typeof c !== "object") return false;
+          if (c.flags && typeof c.flags === "object" && K in c.flags) return c.flags[K] === true;
+          if (typeof c.exposure !== "number" || !isFinite(c.exposure) || c.exposure < 0 || c.exposure > 100) return false;
+          if (typeof c.userId !== "string" || c.userId.length === 0) return false;
+          var h = 0;
+          for (var i = 0; i < c.userId.length; i++) h = (h * 31 + c.userId.charCodeAt(i)) >>> 0;
+          return h % 100 < c.exposure;
+        }
+        var flag = false, variant = "atual";
+        try {
+          flag = on();
+          variant = flag ? "nova" : "atual";
+          if (flag) {
+            document.getElementById("jigglypuff-ficha-rapida").hidden = false;
+            document.getElementById("link-jigglypuff").addEventListener("click", function (ev) {
+              // counted only in its own series; stopPropagation keeps it out of legacy link_clicks_total
+              bump("jigglypuff_link_clicks_total", "nova");
+              ev.stopPropagation();
+            });
+          }
+        } catch (e) {
+          bump("jigglypuff_render_errors_total", variant);
+        }
+        m.jigglypuff_render_errors_total = m.jigglypuff_render_errors_total || {};
+        m.jigglypuff_render_errors_total[variant] = m.jigglypuff_render_errors_total[variant] || 0;
+        bump("jigglypuff_page_views_total", variant);
       })();
     </script>
   </body>
