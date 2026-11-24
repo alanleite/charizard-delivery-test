@@ -1,10 +1,10 @@
 const fs = require("fs"), path = require("path"), assert = require("assert"), vm = require("vm");
 const h = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
 const sec = h.match(/<section id="charmander-ficha-rapida"[\s\S]*?<\/section>/)[0];
-// hidden by default, last section, after Blastoise and Dragonite
+// hidden by default, after Blastoise and Dragonite
 assert(/<section id="charmander-ficha-rapida"[^>]* hidden>/.test(sec));
 assert(h.indexOf("charmander-ficha-rapida") > h.indexOf('id="ficha-dragonite"') && h.indexOf('id="ficha-dragonite"') > h.indexOf('id="blastoise-landing"'));
-assert(h.lastIndexOf("<section") === h.indexOf('<section id="charmander-ficha-rapida"'));
+assert(h.indexOf("<section", h.indexOf("<section id=\"charmander-ficha-rapida\"") + 1) === h.indexOf("<section id=\"eevee-ficha-rapida\""));
 // content
 assert.strictEqual((sec.match(/<h2/g) || []).length, 1);
 assert(sec.includes("Charmander — ficha rápida</h2>"));
@@ -21,7 +21,7 @@ assert(!fs.existsSync(path.join(__dirname, "..", "..", "package.json")));
 // behavior
 const code = [...h.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join("\n");
 function run(cfg) {
-  const els = { "blastoise-landing": { hidden: true }, "pagina-atual": { hidden: false }, "ficha-dragonite": { hidden: true }, "charmander-ficha-rapida": { hidden: true }, "link-pokedex": { l: [], addEventListener(t, f) { this.l.push(f); } } };
+  const els = { "blastoise-landing": { hidden: true }, "pagina-atual": { hidden: false }, "ficha-dragonite": { hidden: true }, "charmander-ficha-rapida": { hidden: true }, "link-pokedex": { l: [], addEventListener(t, f) { this.l.push(f); } }, "eevee-ficha-rapida": { hidden: true }, "link-eevee": { addEventListener() {} } };
   const doc = { getElementById: id => els[id], addEventListener() {} };
   const win = { CHARIZARD_CONFIG: cfg };
   vm.runInNewContext(code, { window: win, document: doc });

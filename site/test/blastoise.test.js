@@ -22,7 +22,7 @@ assert(ws.length === 6 && ws.every(x => x > 0 && x <= 100), "proportional bar wi
 const vm = require("vm");
 const code = [...h.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join("\n");
 function run(cfg, broken) {
-  const els = { "blastoise-landing": { hidden: true }, "pagina-atual": { hidden: false }, "ficha-dragonite": { hidden: true } };
+  const els = { "blastoise-landing": { hidden: true }, "pagina-atual": { hidden: false }, "ficha-dragonite": { hidden: true }, "eevee-ficha-rapida": { hidden: true }, "link-eevee": { addEventListener() {} } };
   const win = { CHARIZARD_CONFIG: cfg };
   const doc = { getElementById: id => { if (broken && id === "blastoise-landing") throw new Error("x"); return els[id]; }, addEventListener(t, fn) { handlers.push(fn); } };
   const handlers = [];
