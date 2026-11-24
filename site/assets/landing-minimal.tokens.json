@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "name": "landing-minimal",
+  "colors": {
+    "transparent": "transparent",
+    "current": "currentColor",
+    "paper": "#FAF9F6",
+    "surface": "#FFFFFF",
+    "subtle": "#F0F1EB",
+    "ink": "#202B25",
+    "muted": "#536057",
+    "line": "#D9DFD6",
+    "brand": "#28533D",
+    "brand-strong": "#193D2B",
+    "on-brand": "#FFFFFF",
+    "focus": "#28533D"
+  },
+  "fontFamily": {
+    "sans": ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+    "editorial": ["Georgia", "Times New Roman", "serif"]
+  },
+  "fontSize": {
+    "caption": ["0.875rem", {"lineHeight": "1.5"}],
+    "body": ["1.125rem", {"lineHeight": "1.6"}],
+    "lead": ["1.25rem", {"lineHeight": "1.6"}],
+    "card-title": ["1.5rem", {"lineHeight": "1.3"}],
+    "section": ["2.25rem", {"lineHeight": "1.15"}],
+    "display": ["3rem", {"lineHeight": "1.08"}],
+    "display-lg": ["4.5rem", {"lineHeight": "1.05"}]
+  },
+  "fontWeight": {"normal": "400", "medium": "500", "semibold": "600"},
+  "lineHeight": {"tight": "1.15", "normal": "1.5", "relaxed": "1.6"},
+  "letterSpacing": {"tight": "-0.04em", "normal": "0", "wide": "0.08em"},
+  "spacing": {
+    "0": "0px",
+    "1": "0.25rem",
+    "2": "0.5rem",
+    "3": "0.75rem",
+    "4": "1rem",
+    "6": "1.5rem",
+    "8": "2rem",
+    "10": "2.5rem",
+    "12": "3rem",
+    "16": "4rem",
+    "20": "5rem",
+    "28": "7rem"
+  },
+  "radii": {"none": "0px", "control": "0.5rem", "card": "1rem", "full": "9999px"},
+  "maxWidth": {"content": "72rem", "reading": "42rem", "headline": "56rem", "none": "none"},
+  "shadows": {"none": "none", "soft": "0 8px 24px rgb(32 43 37 / 0.06)"},
+  "breakpoints": {"md": "768px", "lg": "1024px"},
+  "borderWidth": {"DEFAULT": "1px", "0": "0px", "2": "2px"},
+  "controlSize": {"control": "2.75rem"}
+}
