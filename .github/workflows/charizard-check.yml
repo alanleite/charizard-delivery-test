@@ -13,5 +13,10 @@ jobs:
       - uses: actions/checkout@v6
         with:
           persist-credentials: false
-      - name: The site has its page
-        run: test -s site/index.html
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # The same command as `check` in the workspace's services/delivery-test-site.yaml: the page
+      # exists and every site/test/*.test.js passes (a commit that breaks its own tests fails here).
+      - name: The site has its page and its tests pass
+        run: test -s site/index.html && node --test 'site/test/**/*.test.js'
