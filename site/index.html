@@ -67,6 +67,7 @@
     <h1>Charizard delivery test</h1>
     <p>A stand-in for staging. What was deployed: <a href="charizard-deploy.json">charizard-deploy.json</a>.</p>
     </div>
+    <p id="pokemon-page-link" hidden><a id="link-pokemon" href="pokemon.html">Curiosidades sobre Pokémon</a></p>
     <section id="ficha-dragonite" hidden>
       <h2>Dragonite no Pokémon FireRed</h2>
       <h3>Habilidades</h3>
@@ -348,6 +349,43 @@
         m.jigglypuff_render_errors_total = m.jigglypuff_render_errors_total || {};
         m.jigglypuff_render_errors_total[variant] = m.jigglypuff_render_errors_total[variant] || 0;
         bump("jigglypuff_page_views_total", variant);
+      })();
+    </script>
+    <script>
+      (function () {
+        var m = (window.charizardMetrics = window.charizardMetrics || {});
+        function bump(name, v) { m[name] = m[name] || {}; m[name][v] = (m[name][v] || 0) + 1; }
+        function on() {
+          var c = window.CHARIZARD_CONFIG, K = "pokemon-page";
+          if (!c || typeof c !== "object") return false;
+          if (c.flags && typeof c.flags === "object" && K in c.flags) return c.flags[K] === true;
+          if (typeof c.exposure !== "number" || !isFinite(c.exposure) || c.exposure < 0 || c.exposure > 100) return false;
+          if (typeof c.userId !== "string" || c.userId.length === 0) return false;
+          var h = 0;
+          for (var i = 0; i < c.userId.length; i++) h = (h * 31 + c.userId.charCodeAt(i)) >>> 0;
+          return h % 100 < c.exposure;
+        }
+        var flag = false;
+        try { flag = on(); } catch (e) { flag = false; }
+        if (!flag) return;
+        // one page load = one view: with the flag on it is "nova" even if the link fails to render
+        var v = (m.page_views_total = m.page_views_total || {});
+        if (!v.nova) {
+          if (v.atual > 1) v.atual -= 1; else delete v.atual;
+          bump("page_views_total", "nova");
+        }
+        try {
+          var link = document.getElementById("link-pokemon");
+          var box = document.getElementById("pokemon-page-link");
+          // listener first, reveal last: the link is either fully on or stays hidden
+          link.addEventListener("click", function (ev) {
+            bump("link_clicks_total", "nova");
+            ev.stopPropagation();
+          });
+          box.hidden = false;
+        } catch (e) {
+          bump("page_render_errors_total", "nova");
+        }
       })();
     </script>
   </body>
