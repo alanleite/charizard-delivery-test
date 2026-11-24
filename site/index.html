@@ -109,7 +109,7 @@
             <h2 id="titulo-eevee" class="text-section font-medium tracking-tight">Eevee</h2>
             <div class="grid gap-6 max-w-reading">
               <p class="text-body leading-relaxed">Eevee é um Pokémon do tipo Normal conhecido por suas diferentes evoluções.</p>
-              <p><a id="link-eevee" href="https://www.pokemon.com/br/pokedex/eevee" class="inline-flex min-h-control items-center break-words text-body font-semibold text-brand underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-paper">https://www.pokemon.com/br/pokedex/eevee</a></p>
+              <p class="min-w-0"><a id="link-eevee" href="https://www.pokemon.com/br/pokedex/eevee" class="block min-h-control break-words text-body font-semibold text-brand underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-paper">https://www.pokemon.com/br/pokedex/eevee</a></p>
             </div>
           </div>
         </div>
@@ -232,20 +232,20 @@
           for (var i = 0; i < c.userId.length; i++) h = (h * 31 + c.userId.charCodeAt(i)) >>> 0;
           return h % 100 < c.exposure;
         }
-        var flag = false;
-        try { flag = on(); } catch (e) { flag = false; }
-        var variant = flag ? "nova" : "atual";
-        if (flag) {
-          try {
-            var sec = document.getElementById("eevee-ficha-rapida");
-            sec.hidden = false;
-            var link = document.getElementById("link-eevee");
-            link.addEventListener("click", function () {
+        var flag = false, variant = "atual";
+        try {
+          flag = on();
+          variant = flag ? "nova" : "atual";
+          if (flag) {
+            document.getElementById("eevee-ficha-rapida").hidden = false;
+            document.getElementById("link-eevee").addEventListener("click", function (ev) {
               bump("eevee_link_clicks_total", "nova");
+              ev.stopPropagation();
             });
-          } catch (e) {
-            bump("eevee_render_errors_total", variant);
           }
+        } catch (e) {
+          // real failure: counted with the current variant (atual if the flag could not be evaluated)
+          bump("eevee_render_errors_total", variant);
         }
         bump("eevee_page_views_total", variant);
       })();

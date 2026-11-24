@@ -2,4 +2,4 @@ Compiled with Tailwind CLI 3.4.17 (landing-minimal skill config and input; token
 Command (from repo root, SKILL_DIR = landing-minimal skill directory):
 npx --yes tailwindcss@3.4.17 --config "$SKILL_DIR/maintenance/tailwind.config.cjs" --input "$SKILL_DIR/maintenance/input.css" --content './site/**/*.html,./site/**/*.js,./site/**/*.ts,./site/**/*.jsx,./site/**/*.tsx' --output site/assets/landing.css --minify
 Added class: underline-offset-4
-Generated selector checked in site/assets/landing.css: .underline-offset-4{text-underline-offset:4px}
+Generated selector checked in site/assets/landing.css: .landing-minimal .underline-offset-4{text-underline-offset:4px}

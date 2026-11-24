@@ -20,7 +20,7 @@ assert(/\.underline-offset-4\{text-underline-offset:4px\}/.test(css));
 const b = fs.readFileSync(path.join(root, "assets", "landing-build.txt"), "utf8");
 assert(b.includes("npx --yes tailwindcss@3.4.17") && b.includes("underline-offset-4") && b.includes("text-underline-offset:4px"));
 // AC6: layout tokens
-assert(/px-6 md:px-12 py-20 md:py-28/.test(sec) && /grid gap-8/.test(sec) && sec.includes("break-words"));
+assert(/px-6 md:px-12 py-20 md:py-28/.test(sec) && /grid gap-8/.test(sec) && sec.includes("break-words") && /<p class="min-w-0"><a id="link-eevee"[^>]* class="block /.test(sec));
 // behavior
 const code = [...h.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).join("\n");
 const IDS = ["blastoise-landing", "pagina-atual", "ficha-dragonite", "charmander-ficha-rapida", "eevee-ficha-rapida", "link-pokedex", "link-eevee"];
@@ -31,7 +31,7 @@ function run(cfg) {
   const doc = { getElementById: id => els[id], addEventListener(t, f) { docL.push(f); } };
   const win = { CHARIZARD_CONFIG: cfg };
   vm.runInNewContext(code, { window: win, document: doc });
-  return { els, m: win.charizardMetrics };
+  return { els, docL, m: win.charizardMetrics };
 }
 const ON = { environment: "staging", userId: "staging", exposure: 100, flags: {} };
 let r = run(null);
@@ -46,8 +46,29 @@ r = run(ON);
 assert.strictEqual(r.els["eevee-ficha-rapida"].hidden, false);
 assert.strictEqual(JSON.stringify(r.m.eevee_page_views_total), JSON.stringify({ nova: 1 }));
 assert(!r.m.eevee_render_errors_total);
-r.els["link-eevee"].l.forEach(f => f({}));
-assert.strictEqual(JSON.stringify(r.m.eevee_link_clicks_total), JSON.stringify({ nova: 1 }));
+const legacyBefore = JSON.stringify(r.m.link_clicks_total);
+for (let n = 1; n <= 2; n++) {
+  // real click: the legacy document listener runs only if propagation continues
+  let stopped = false;
+  const ev = { target: { closest: () => ({}) }, stopPropagation() { stopped = true; } };
+  r.els["link-eevee"].l.forEach(f => f(ev));
+  if (!stopped) r.docL.forEach(f => f(ev));
+  assert.strictEqual(r.m.eevee_link_clicks_total.nova, n);
+}
+assert.strictEqual(JSON.stringify(r.m.link_clicks_total), legacyBefore);
+// explicit exposure 0 default is off
+r = run({ userId: "s", exposure: 0 });
+assert.strictEqual(r.els["eevee-ficha-rapida"].hidden, true);
+assert.strictEqual(JSON.stringify(r.m.eevee_page_views_total), JSON.stringify({ atual: 1 }));
+// real failure in the off path is counted with variant=atual
+{
+  const els = {};
+  for (const id of IDS) els[id] = { hidden: id !== "pagina-atual", addEventListener() {} };
+  const win = { CHARIZARD_CONFIG: { get flags() { throw new Error("boom"); }, exposure: 0, userId: "s" } };
+  vm.runInNewContext(code, { window: win, document: { getElementById: id => els[id], addEventListener() {} } });
+  assert.strictEqual(win.charizardMetrics.eevee_render_errors_total.atual, 1);
+  assert.strictEqual(win.charizardMetrics.eevee_page_views_total.atual, 1);
+}
 // real render failure counted with the variant
 {
   const els = {};
