@@ -239,6 +239,8 @@
           if (flag) {
             document.getElementById("eevee-ficha-rapida").hidden = false;
             document.getElementById("link-eevee").addEventListener("click", function (ev) {
+              // Deliberate: the Eevee click is counted only in its own series; stopPropagation keeps
+              // it out of the legacy link_clicks_total (a click the baseline page could not have).
               bump("eevee_link_clicks_total", "nova");
               ev.stopPropagation();
             });

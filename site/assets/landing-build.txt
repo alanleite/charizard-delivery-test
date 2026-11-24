@@ -3,3 +3,5 @@ Command (from repo root, SKILL_DIR = landing-minimal skill directory):
 npx --yes tailwindcss@3.4.17 --config "$SKILL_DIR/maintenance/tailwind.config.cjs" --input "$SKILL_DIR/maintenance/input.css" --content './site/**/*.html,./site/**/*.js,./site/**/*.ts,./site/**/*.jsx,./site/**/*.tsx' --output site/assets/landing.css --minify
 Added class: underline-offset-4
 Generated selector checked in site/assets/landing.css: .landing-minimal .underline-offset-4{text-underline-offset:4px}
+Rebuilt at the final tree. The content glob also scans site/test/*.js and comments, so incidental candidates (.sticky, .inline, .border, .ring) appear in the CSS; they are not page classes of the Eevee section and are unused.
+Eevee link click is counted only in eevee_link_clicks_total; stopPropagation keeps it out of the legacy link_clicks_total on purpose.

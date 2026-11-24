@@ -90,6 +90,16 @@ for (const cfg of [
   assert.strictEqual(x.els["link-eevee"].l.length, 0);
   assert(!x.m.eevee_link_clicks_total);
 }
+// precedence: explicit true override beats exposure 0; non-object flags falls through to exposure
+{
+  const a = run({ userId: "s", exposure: 0, flags: { "eevee-ficha-rapida": true } });
+  assert.strictEqual(a.els["eevee-ficha-rapida"].hidden, false);
+  assert.strictEqual(JSON.stringify(a.m.eevee_page_views_total), JSON.stringify({ nova: 1 }));
+  const b = run({ userId: "s", exposure: 100, flags: "on" });
+  assert.strictEqual(b.els["eevee-ficha-rapida"].hidden, false);
+  const c = run({ userId: "s", exposure: 0, flags: "on" });
+  assert.strictEqual(c.els["eevee-ficha-rapida"].hidden, true);
+}
 // legacy series untouched by the Eevee script
 {
   const off = run({ userId: "s", exposure: 0 }), on = run(ON);
