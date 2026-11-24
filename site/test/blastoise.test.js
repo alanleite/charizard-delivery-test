@@ -49,7 +49,7 @@ assert(r.m.page_views_total.atual === 1 && !r.m.page_views_total.nova);
 r = run({ exposure: 100 });
 assert(r.els["blastoise-landing"].hidden && r.m.page_views_total.atual === 1);
 // explicit false override beats exposure
-r = run({ exposure: 100, userId: "staging", flags: { "blastoise-landing": false } });
+r = run({ exposure: 100, userId: "staging", flags: { "blastoise-landing": false, "pokemon-page": false } });
 assert(r.els["blastoise-landing"].hidden && r.m.page_views_total.atual === 1);
 // clicks counted with the variant label
 r = run({ flags: { "blastoise-landing": true } }); r.click(); r.click();
