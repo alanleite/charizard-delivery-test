@@ -106,3 +106,33 @@ assert(h.includes("page_views_total: {}") && h.includes("link_clicks_total: {}")
 }
 // wider negative-content guard
 assert(!/<picture|<iframe|<object|sendBeacon/.test(sec));
+// atomic render: section present but link missing -> stays hidden, error counted, view still counted
+{
+  const els = { "jigglypuff-ficha-rapida": { hidden: true } };
+  const win = { CHARIZARD_CONFIG: { flags: { "jigglypuff-ficha-rapida": true } } };
+  vm.runInNewContext(code, { window: win, document: { getElementById: id => els[id], addEventListener() {} } });
+  assert.strictEqual(els["jigglypuff-ficha-rapida"].hidden, true);
+  assert.strictEqual(win.charizardMetrics.jigglypuff_render_errors_total.nova, 1);
+  assert.strictEqual(win.charizardMetrics.jigglypuff_page_views_total.nova, 1);
+}
+// exact layout token values in the existing CSS
+for (const c of [".px-6{padding-left:1.5rem;padding-right:1.5rem}", ".py-20{padding-top:5rem;padding-bottom:5rem}", ".gap-8{gap:2rem}", ".max-w-content{max-width:72rem}", ".max-w-reading{max-width:42rem}", ".min-h-control{min-height:2.75rem}"]) assert(css.includes(c), c);
+assert(/\.text-section\{[^}]*font-size:2\.25rem/.test(css), "text-section");
+assert(/\.md\\:px-12[^}]*3rem/.test(css) && /\.md\\:py-28[^}]*7rem/.test(css));
+// one H2 total, content order
+assert.strictEqual((sec.match(/<h2/g) || []).length, 1);
+{
+  const idx = ["<h2", "Tipo: Normal/Fada", "Seu canto suave", 'id="link-jigglypuff"'].map(s => sec.indexOf(s));
+  assert(idx.every((n, i) => n >= 0 && (i === 0 || n > idx[i - 1])), J(idx));
+}
+assert(sec.includes('id="titulo-jigglypuff"'));
+// no backend calls in page scripts, no lab operational words in visible text
+assert(!/fetch\(|XMLHttpRequest|sendBeacon|WebSocket|EventSource/.test(code));
+assert(!/\b(pause|resume|revisor|rodada|tentativa)\b/i.test(sec.replace(/<[^>]*>/g, " ")));
+// explicit-false and more fail-closed cases
+r = run({ flags: { "jigglypuff-ficha-rapida": false }, exposure: 100, userId: "s" });
+assert.strictEqual(r.els["link-jigglypuff"].l.length, 0);
+assert.strictEqual(J(r.m.jigglypuff_render_errors_total), J({ atual: 0 }));
+for (const c of [{}, { exposure: 0, userId: "s" }, { exposure: "100", userId: "s" }, { exposure: 100, userId: 0 }])
+  assert.strictEqual(run(c).els["jigglypuff-ficha-rapida"].hidden, true, J(c));
+assert(!run({ environment: "staging", userId: "staging", exposure: 100, flags: {} }).m.jigglypuff_link_clicks_total);
