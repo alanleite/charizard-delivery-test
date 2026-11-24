@@ -37,6 +37,14 @@ let stopped = 0;
 const solo = run({ flags: { "charmander-ficha-rapida": true } });
 assert(solo.els["charmander-ficha-rapida"].hidden === false);
 assert.strictEqual(solo.m.page_views_total.nova, 1);
+assert(!solo.m.page_views_total.atual);
+// render error is labelled nova
+{
+  const els = { "blastoise-landing": { hidden: true }, "pagina-atual": { hidden: false }, "ficha-dragonite": { hidden: true } };
+  const win = { CHARIZARD_CONFIG: { flags: { "charmander-ficha-rapida": true } } };
+  vm.runInNewContext(code, { window: win, document: { getElementById: id => els[id], addEventListener() {} } });
+  assert.strictEqual(win.charizardMetrics.page_render_errors_total.nova, 1);
+}
 r.els["link-pokedex"].l.forEach(f => f({ stopPropagation() { stopped++; } }));
 assert.strictEqual(r.m.link_clicks_total.nova, 1);
 r = run({ exposure: 500, userId: "x" });

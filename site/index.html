@@ -188,8 +188,13 @@
         if (!flag) return;
         try {
           document.getElementById("charmander-ficha-rapida").hidden = false;
-          // the existing script already counted this view as "nova" when the Blastoise variant is shown
-          if (document.getElementById("blastoise-landing").hidden) bump("page_views_total", "nova");
+          // the existing script already counted this load once: as "nova" if Blastoise is shown, else as "atual".
+          // With this section displayed the view belongs to "nova" only, so move it.
+          if (document.getElementById("blastoise-landing").hidden) {
+            var v = m.page_views_total;
+            if (v.atual > 1) v.atual -= 1; else delete v.atual;
+            bump("page_views_total", "nova");
+          }
           var link = document.getElementById("link-pokedex");
           if (link) link.addEventListener("click", function (ev) {
             bump("link_clicks_total", "nova");
