@@ -92,8 +92,24 @@ jobs:
         id: upload
         with:
           path: public
+      # Right after the upload above, GitHub sometimes lists no "github-pages" artifact for this
+      # run ("Found 0 artifact(s)"); the same run finds it a few seconds later. One second try,
+      # never more; a real Pages failure fails both and is still named deploy.
       - uses: actions/deploy-pages@v4
+        id: pages_first
+        continue-on-error: true
+      - name: Wait before the second try
+        if: steps.pages_first.outcome == 'failure'
+        run: sleep 20
+      - uses: actions/deploy-pages@v4
+        id: pages_retry
+        if: steps.pages_first.outcome == 'failure'
+      - name: The deployed address
         id: pages
+        env:
+          FIRST: ${{ steps.pages_first.outputs.page_url }}
+          RETRY: ${{ steps.pages_retry.outputs.page_url }}
+        run: echo "page_url=${RETRY:-$FIRST}" >> "$GITHUB_OUTPUT"
       - name: Read the live site back
         id: live
         env:
@@ -115,7 +131,7 @@ jobs:
           DOWNLOAD: ${{ steps.download.outcome }}
           DIGEST: ${{ steps.digest.outcome }}
           UPLOAD: ${{ steps.upload.outcome }}
-          PAGES: ${{ steps.pages.outcome }}
+          PAGES: ${{ steps.pages_retry.outcome }}
           LIVE: ${{ steps.live.outcome }}
         run: |
           category=other
