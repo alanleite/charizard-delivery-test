@@ -136,3 +136,35 @@ assert.strictEqual(J(r.m.jigglypuff_render_errors_total), J({ atual: 0 }));
 for (const c of [{}, { exposure: 0, userId: "s" }, { exposure: "100", userId: "s" }, { exposure: 100, userId: 0 }])
   assert.strictEqual(run(c).els["jigglypuff-ficha-rapida"].hidden, true, J(c));
 assert(!run({ environment: "staging", userId: "staging", exposure: 100, flags: {} }).m.jigglypuff_link_clicks_total);
+// class usage on wrapper, H2 and link (not only definitions)
+{
+  const cls = re => ((sec.match(re) || [])[1] || "").split(/\s+/);
+  const has = (list, want) => want.every(w => list.includes(w));
+  assert(has(cls(/<div class="([^"]*)">\s*<div class="mx-auto/), ["px-6", "md:px-12", "py-20", "md:py-28"]));
+  assert(has(cls(/<div class="(mx-auto[^"]*)"/), ["mx-auto", "max-w-content"]));
+  assert(has(cls(/<div class="(grid gap-8[^"]*)"/), ["grid", "gap-8", "max-w-reading"]));
+  assert(has(cls(/<h2[^>]*class="([^"]*)"/), ["text-section"]));
+  assert(has(cls(/<a [^>]*class="([^"]*)"/), ["min-h-control", "inline-flex", "items-center"]));
+}
+// every class used by the section exists in the landing-minimal class list; no Luma
+{
+  const known = new Set(fs.readFileSync(path.join(root, "assets", "landing-minimal.classes.txt"), "utf8").split(/\s+/).filter(Boolean));
+  const used = new Set([...sec.matchAll(/class="([^"]*)"/g)].flatMap(m => m[1].split(/\s+/).filter(Boolean)));
+  for (const c of used) assert(known.has(c), "unknown class " + c);
+  assert(!/luma/i.test(sec));
+}
+// shipped default config is off
+assert(/CHARIZARD_CONFIG\s*\|\|\s*null/.test(fs.readFileSync(path.join(root, "charizard-config.js"), "utf8")));
+// evaluationKey userId at mid exposure: both sides occur
+{
+  const on = id => !run({ exposure: 50, userId: id }).els["jigglypuff-ficha-rapida"].hidden;
+  const res = ["alice", "bob", "carol", "dave", "erin", "frank", "grace", "heidi"].map(on);
+  assert(res.includes(true) && res.includes(false), J(res));
+  assert.strictEqual(on("alice"), on("alice"));
+}
+// atual failure path also counts the view
+{
+  const win = { CHARIZARD_CONFIG: { get flags() { throw new Error("x"); } } };
+  vm.runInNewContext(code, { window: win, document: { getElementById: () => undefined, addEventListener() {} } });
+  assert.strictEqual(J(win.charizardMetrics.jigglypuff_page_views_total), J({ atual: 1 }));
+}
