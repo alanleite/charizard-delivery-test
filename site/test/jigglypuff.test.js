@@ -84,3 +84,25 @@ assert.strictEqual(run({ flags: "x", exposure: 100, userId: "s" }).els["jigglypu
 assert(/rounded-control/.test(a[0]) && /focus-visible:ring-focus/.test(a[0]) && /ring-offset-2/.test(a[0]) && /ring-offset-paper/.test(a[0]) && sec.includes('aria-labelledby="titulo-jigglypuff"'));
 // legacy series not renamed
 assert(h.includes("page_views_total: {}") && h.includes("link_clicks_total: {}"));
+// series shape: one label per series; clicks only nova
+{
+  const x = run({ flags: { "jigglypuff-ficha-rapida": true } });
+  assert.deepStrictEqual(Object.keys(x.m.jigglypuff_page_views_total), ["nova"]);
+  assert.deepStrictEqual(Object.keys(x.m.jigglypuff_render_errors_total), ["nova"]);
+  x.els["link-jigglypuff"].l.forEach(f => f({ stopPropagation() {} }));
+  assert.deepStrictEqual(Object.keys(x.m.jigglypuff_link_clicks_total), ["nova"]);
+  const y = run(null);
+  assert.deepStrictEqual(Object.keys(y.m.jigglypuff_page_views_total), ["atual"]);
+  assert.deepStrictEqual(Object.keys(y.m.jigglypuff_render_errors_total), ["atual"]);
+}
+// stopPropagation is scoped to the Jigglypuff link: other links still reach the legacy listener
+{
+  const x = run({ flags: { "jigglypuff-ficha-rapida": true } });
+  assert.strictEqual(x.els["link-pokedex"].l.length, 0);
+  const before = (x.m.link_clicks_total && Object.values(x.m.link_clicks_total).reduce((s, n) => s + n, 0)) || 0;
+  x.docL.forEach(f => f({ target: { closest: () => ({}) }, stopPropagation() {} }));
+  const after = (x.m.link_clicks_total && Object.values(x.m.link_clicks_total).reduce((s, n) => s + n, 0)) || 0;
+  assert.strictEqual(after, before + 1);
+}
+// wider negative-content guard
+assert(!/<picture|<iframe|<object|sendBeacon/.test(sec));

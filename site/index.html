@@ -334,12 +334,13 @@
           flag = on();
           variant = flag ? "nova" : "atual";
           if (flag) {
-            document.getElementById("jigglypuff-ficha-rapida").hidden = false;
+            // listener first, reveal last: the section is either fully on or stays hidden
             document.getElementById("link-jigglypuff").addEventListener("click", function (ev) {
               // counted only in its own series; stopPropagation keeps it out of legacy link_clicks_total
               bump("jigglypuff_link_clicks_total", "nova");
               ev.stopPropagation();
             });
+            document.getElementById("jigglypuff-ficha-rapida").hidden = false;
           }
         } catch (e) {
           bump("jigglypuff_render_errors_total", variant);
