@@ -15,3 +15,4 @@
   `window.charizardMetrics`) with the labels the contract names; the metrics are simulated for the
   Engine.
 - `.github/` and `README.md` are protected: never change them.
+- For pages and landing pages, load the workspace skill `landing-minimal` and use its `tokens.json` design tokens.
