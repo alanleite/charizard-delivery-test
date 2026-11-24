@@ -63,7 +63,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          run=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/charizard-build.yml/runs?head_sha=$COMMIT&event=push&status=success&per_page=1" --jq '.workflow_runs[0].id // empty')
+          # The API's status filter combined with head_sha can return nothing for a green run (seen
+          # in the lab, cycle 8); list the commit's push runs and pick a successful one here.
+          run=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/charizard-build.yml/runs?head_sha=$COMMIT&event=push&per_page=20" --jq '[.workflow_runs[] | select(.conclusion == "success")][0].id // empty')
           test -n "$run"
           echo "run=$run" >> "$GITHUB_OUTPUT"
       - uses: actions/download-artifact@v5
