@@ -4,8 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Curiosidades sobre Pokémon</title>
+    <script src="charizard-config.js"></script>
   </head>
-  <body>
+  <body hidden>
     <h1>Curiosidades sobre Pokémon</h1>
     <p>Algumas curiosidades sobre a franquia Pokémon.</p>
     <ul>
@@ -15,5 +16,24 @@
       <li>[Curiosidade a ser escrita pelo autor]</li>
     </ul>
     <p><a href="index.html">Voltar à página principal</a></p>
+    <script>
+      (function () {
+        // fail closed: the content stays hidden unless the pokemon-page flag is on; otherwise go back to the main page
+        function on() {
+          var c = window.CHARIZARD_CONFIG, K = "pokemon-page";
+          if (!c || typeof c !== "object") return false;
+          if (c.flags && typeof c.flags === "object" && K in c.flags) return c.flags[K] === true;
+          if (typeof c.exposure !== "number" || !isFinite(c.exposure) || c.exposure < 0 || c.exposure > 100) return false;
+          if (typeof c.userId !== "string" || c.userId.length === 0) return false;
+          var h = 0;
+          for (var i = 0; i < c.userId.length; i++) h = (h * 31 + c.userId.charCodeAt(i)) >>> 0;
+          return h % 100 < c.exposure;
+        }
+        var flag = false;
+        try { flag = on(); } catch (e) { flag = false; }
+        if (flag) document.body.hidden = false;
+        else window.location.replace("index.html");
+      })();
+    </script>
   </body>
 </html>
